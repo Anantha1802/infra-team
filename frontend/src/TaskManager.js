@@ -1,53 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const TaskManager = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
   // Fetch tasks from backend on component mount
-  useEffect(() => {
-    fetch("http://localhost:5000/api/tasks")
-      .then((res) => res.json())
-      .then((data) => setTasks(data));
+  React.useEffect(() => {
+   
   }, []);
 
-  // Add a task to the database
+
+  // Add a new task
   const addTask = () => {
     if (newTask) {
-      fetch("http://localhost:5000/api/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task: newTask }),
-      })
-        .then((res) => res.json())
-        .then(({ tasks }) => setTasks(tasks));
-      setNewTask(""); // Clear the input field
+      axios
+        .post("http://localhost:5000/api/tasks", { task: newTask })
+        .then((response) => {
+          setTasks([...tasks, response.data]); // Add new task to the list
+          setNewTask(""); // Clear the input field
+        })
+        .catch((error) => {
+          console.error("There was an error adding the task:", error);
+        });
     }
-  };
-
-  // Delete a task from the database
-  const deleteTask = (id) => {
-    fetch(`http://localhost:5000/api/tasks/${id}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then(({ tasks }) => setTasks(tasks));
   };
 
   return (
     <div>
       <input
+        type="text"
         value={newTask}
         onChange={(e) => setNewTask(e.target.value)}
-        placeholder="New Task"
+        placeholder="Enter new task"
       />
-      <button onClick={addTask}>Add</button>
+      <button onClick={addTask}>Add Task</button>
+
       <ul>
         {tasks.map((task) => (
-          <li key={task.id}>
-            {task.task}{" "}
-            <button onClick={() => deleteTask(task.id)}>Delete</button>
-          </li>
+          <li key={task.id}>{task.task}</li>
         ))}
       </ul>
     </div>
